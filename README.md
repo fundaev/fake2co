@@ -9,8 +9,8 @@
  USAGE
 ------------------------------------
 There are 2 entry points:
-1. index.php - entry point for checkout. Your script (e-commerce shopping cart software or something else) should send the data to this script to create new order in "2checkout emulator".
-2. cp.php - admin back-end. Here you can see the orders list, manage the invoices of selected order and send new callback requests.
+* index.php - entry point for checkout. Your script (e-commerce shopping cart software or something else) should send the data to this script to create new order in "2checkout emulator".
+* cp.php - admin back-end. Here you can see the orders list, manage the invoices of selected order and send new callback requests.
 
 
 
