@@ -25,10 +25,17 @@ function prepareCallbackForm()
 			document.getElementById('invoice_id').removeAttribute('disabled');
 
 		} else {
-			document.getElementById('invoice_status').setAttribute('disabled', 'disabled');
-			document.getElementById('fraud_status').setAttribute('disabled', 'disabled');
-			document.getElementById('invoice_id').setAttribute('disabled', 'disabled');
+			if (document.callback_form.message_type.value == 'ORDER_CREATED') {
+				document.getElementById('invoice_status').removeAttribute('disabled');
+				document.getElementById('fraud_status').removeAttribute('disabled');
+				document.getElementById('invoice_id').setAttribute('disabled', 'disabled');
 
+			} else {
+				document.getElementById('invoice_status').setAttribute('disabled', 'disabled');
+				document.getElementById('fraud_status').setAttribute('disabled', 'disabled');
+				document.getElementById('invoice_id').setAttribute('disabled', 'disabled');
+
+			}
 		}
 	}
 }
@@ -68,7 +75,7 @@ if (isset($_GET['order_id']) && isset($_GET['callback_id'])) {
 	echo "    <input type=\"hidden\" name=\"order_id\" value=\"$_GET[order_id]\" />";
 	echo "    <label for=\"message_type\">Message type:</label>\n";
 	echo "    <select name=\"message_type\" onchange=\"javascript: prepareCallbackForm(); void(0);\">\n";
-//	echo "        <option selected=\"selected\">ORDER_CREATED</option>\n";
+	echo "        <option selected=\"selected\">ORDER_CREATED</option>\n";
 	echo "        <option>FRAUD_STATUS_CHANGED</option>\n";
 	echo "        <option>INVOICE_STATUS_CHANGED</option>\n";
 	echo "        <option>REFUND_ISSUED</option>\n";

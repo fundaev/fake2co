@@ -20,21 +20,25 @@ function processOrder($params)
 		'price'             => $params['li_0_price'],
         'merchant_order_id' => $params['merchant_order_id'],
         'return_url'        => $params['return_url'],
-        'fraud_status'      => $params['fraud_status'],
+        'fraud_status'      => (isset($params['fraud_status']) ? $params['fraud_status'] : 'wait'),
 	);
 	$order_id = db_insert('orders', $fields);
-	$transaction_id = makeTransaction($order_id, $params['invoice_status']);
 
- 	// Callback
-    $data = array(
-		'auth_exp'            => '2015-12-31',
-		'invoice_status'      => $params['invoice_status'],
-		'fraud_status'        => $params['fraud_status'],
-		'invoice_list_amount' => $params['li_0_price'],
-		'invoice_usd_amount'  => $params['li_0_price'],
-		'invoice_cust_amount' => $params['li_0_price'],
-    );
-    sendCallback($order_id, $transaction_id, 'ORDER_CREATED', $data);
+	if (isset($params['send_callback'])) {
+		$transaction_id = makeTransaction($order_id, $params['invoice_status']);
+	 	// Callback
+	    $data = array(
+			'auth_exp'            => '2015-12-31',
+			'invoice_status'      => $params['invoice_status'],
+			'fraud_status'        => $params['fraud_status'],
+			'invoice_list_amount' => $params['li_0_price'],
+			'invoice_usd_amount'  => $params['li_0_price'],
+			'invoice_cust_amount' => $params['li_0_price'],
+    	);
+    	sendCallback($order_id, $transaction_id, 'ORDER_CREATED', $data);
+    } else {
+    	$transaction_id = $order_id;
+    }
 
 	returnBack($params, true, $order_id, $transaction_id);
 }
@@ -146,8 +150,9 @@ function returnBack($params, $success, $orderId, $transactionId)
 	foreach ($args as $arg => $value) {
 		echo "    <input type=\"hidden\" name=\"$arg\" value=\"$value\" />\n";
 	}
+	echo "<input type=\"submit\" value=\"Return back\" />";
 	echo "</form>";
-	echo "<script type=\"text/javascript\">document.return_form.submit();</script>";
+	//echo "<script type=\"text/javascript\">document.return_form.submit();</script>";
 }
 
 function sendCallback($orderId, $transactionId, $type, $additionalData = array())
@@ -258,6 +263,20 @@ function processCallback($params)
 }
 
 // Callbacks
+
+function callback_orderCreated($orderId, $invoiceStatus, $fraudStatus)
+{
+	$transaction_id = makeTransaction($orderId, $invoiceStatus);
+    $data = array(
+		'auth_exp'            => '2015-12-31',
+		'invoice_status'      => $invoiceStatus,
+		'fraud_status'        => $fraudStatus,
+		'invoice_list_amount' => $params['li_0_price'],
+		'invoice_usd_amount'  => $params['li_0_price'],
+		'invoice_cust_amount' => $params['li_0_price'],
+   	);
+   	sendCallback($orderId, $transaction_id, 'ORDER_CREATED', $data);
+}
 
 function callback_RecurringInstallmentSuccess($orderId)
 {

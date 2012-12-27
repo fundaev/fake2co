@@ -1,11 +1,28 @@
 <html>
 <head>
+	<script type="text/javascript">
+	function updateFormState()
+	{
+		if (document.process_order_form.send_callback.checked) {
+			document.process_order_form.invoice_status.removeAttribute('disabled');
+			document.process_order_form.fraud_status.removeAttribute('disabled');
+
+		} else {
+			document.process_order_form.invoice_status.setAttribute('disabled', 'disabled');
+			document.process_order_form.fraud_status.setAttribute('disabled', 'disabled');
+
+		}
+	}
+	</script>
 </head>
 
 <body>
 
 <form action="process_order.php" method="POST" name="process_order_form">
 	<input type="hidden" name="action" value="processOrder" />
+	<label for="send_callback">Send callback:</label>
+	<input type="checkbox" name="send_callback" checked="checked" onclick="javascript: updateFormState(); void(0);" />
+	<br /><br />
 	<label for="invoice_status">Invoice status:</label>
 	<select name="invoice_status">
 		<option value="approved">Approved</option>
