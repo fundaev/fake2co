@@ -108,7 +108,14 @@ function getOrdersList()
 function returnBack($params, $success, $orderId, $transactionId)
 {
 	$config = parse_ini_file('config.ini.php');
-	$key = strtoupper(md5( $config['secret_word'] . $params['sid'] . $orderId . (isset($params['demo']) ? '1' : $params['li_0_price']) ));
+	$key = strtoupper(
+		md5(
+			$config['secret_word'] 
+			. $params['sid']
+			. (isset($params['demo']) ? '1' : $orderId)
+			. $params['li_0_price']
+		)
+	);
 
 	$args = array(
 		'card_holder_name'      => $params['card_holder_name'],
