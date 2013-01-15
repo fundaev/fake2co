@@ -221,7 +221,7 @@ function sendCallback($orderId, $transactionId, $type, $additionalData = array()
 	$data += $additionalData;
 
 	$md5hash = md5( $data['sale_id'] . $data['vendor_id'] . $data['invoice_id'] . $config['secret_word']);
-	$data['md5hash'] = strtoupper($md5hash);
+	$data['md5_hash'] = strtoupper($md5hash);
 
 	$data['key_count'] = count($data) + 1;
 
