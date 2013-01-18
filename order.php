@@ -8,6 +8,11 @@ define('TRANSACTION_STATUS_FAILED', 'declined');
 
 function processOrder($params)
 {
+	$price = intval($params['li_0_price']);
+	if (isset($params['li_0_startup_fee'])) {
+	    $price += intval($params['li_0_startup_fee']);
+	}
+
 	// Insert order into DB
 	$fields = array(
 		'create_date'       => time(),
@@ -17,7 +22,7 @@ function processOrder($params)
 		'recurrence'        => $params['li_0_recurrence'],
 		'product'           => $params['li_0_name'],
 		'product_desc'      => $params['li_0_product_description'],
-		'price'             => $params['li_0_price'],
+		'price'             => $price,
         'merchant_order_id' => $params['merchant_order_id'],
         'return_url'        => $params['return_url'],
         'fraud_status'      => (isset($params['fraud_status']) ? $params['fraud_status'] : 'wait'),
@@ -31,9 +36,9 @@ function processOrder($params)
 			'auth_exp'            => '2015-12-31',
 			'invoice_status'      => $params['invoice_status'],
 			'fraud_status'        => $params['fraud_status'],
-			'invoice_list_amount' => $params['li_0_price'],
-			'invoice_usd_amount'  => $params['li_0_price'],
-			'invoice_cust_amount' => $params['li_0_price'],
+			'invoice_list_amount' => $price,
+			'invoice_usd_amount'  => $price,
+			'invoice_cust_amount' => $price,
     	);
     	sendCallback($order_id, $transaction_id, 'ORDER_CREATED', $data);
     } else {
@@ -108,12 +113,18 @@ function getOrdersList()
 function returnBack($params, $success, $orderId, $transactionId)
 {
 	$config = parse_ini_file('config.ini.php');
+
+	$price = intval($params['li_0_price']);
+	if (isset($params['li_0_startup_fee'])) {
+	    $price += intval($params['li_0_startup_fee']);
+	}
+
 	$key = strtoupper(
 		md5(
 			$config['secret_word'] 
 			. $params['sid']
 			. (isset($params['demo']) ? '1' : $orderId)
-			. $params['li_0_price']
+			. $price
 		)
 	);
 
@@ -145,7 +156,7 @@ function returnBack($params, $success, $orderId, $transactionId)
 		'state'                 => 'New York',
 		'street_address'        => 'Address',
 		'street_address2'       => 'Address 2',
-		'total'                 => $params['li_0_price'],
+		'total'                 => $price,
 		'zip'                   => '10001',
 	);
 
@@ -274,13 +285,14 @@ function processCallback($params)
 function callback_orderCreated($orderId, $invoiceStatus, $fraudStatus)
 {
 	$transaction_id = makeTransaction($orderId, $invoiceStatus);
+	$order = getOrderInfo($orderId);
     $data = array(
 		'auth_exp'            => '2015-12-31',
 		'invoice_status'      => $invoiceStatus,
 		'fraud_status'        => $fraudStatus,
-		'invoice_list_amount' => $params['li_0_price'],
-		'invoice_usd_amount'  => $params['li_0_price'],
-		'invoice_cust_amount' => $params['li_0_price'],
+		'invoice_list_amount' => $order['price'],
+		'invoice_usd_amount'  => $order['price'],
+		'invoice_cust_amount' => $order['price'],
    	);
    	sendCallback($orderId, $transaction_id, 'ORDER_CREATED', $data);
 }
@@ -299,13 +311,14 @@ function callback_RecurringInstallmentFailed($orderId)
 
 function callback_FraudStatusChanged($orderId, $invoiceStatus, $fraudStatus, $invoiceId)
 {
+	$order = getOrderInfo($orderId);
     $data = array(
 		'auth_exp'            => '2015-12-31',
 		'invoice_status'      => $invoiceStatus,
 		'fraud_status'        => $fraudStatus,
-		'invoice_list_amount' => $params['li_0_price'],
-		'invoice_usd_amount'  => $params['li_0_price'],
-		'invoice_cust_amount' => $params['li_0_price'],
+		'invoice_list_amount' => $order['price'],
+		'invoice_usd_amount'  => $order['price'],
+		'invoice_cust_amount' => $order['price'],
     );
     sendCallback($orderId, $invoiceId, 'FRAUD_STATUS_CHANGED', $data);
 
@@ -316,13 +329,14 @@ function callback_FraudStatusChanged($orderId, $invoiceStatus, $fraudStatus, $in
 
 function callback_InvoiceStatusChanged($orderId, $invoiceStatus, $fraudStatus, $invoiceId)
 {
+	$order = getOrderInfo($orderId);
     $data = array(
 		'auth_exp'            => '2015-12-31',
 		'invoice_status'      => $invoiceStatus,
 		'fraud_status'        => $fraudStatus,
-		'invoice_list_amount' => $params['li_0_price'],
-		'invoice_usd_amount'  => $params['li_0_price'],
-		'invoice_cust_amount' => $params['li_0_price'],
+		'invoice_list_amount' => $order['price'],
+		'invoice_usd_amount'  => $order['price'],
+		'invoice_cust_amount' => $order['price'],
     );
     sendCallback($orderId, $invoiceId, 'INVOICE_STATUS_CHANGED', $data);
 
