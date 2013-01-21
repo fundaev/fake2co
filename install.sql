@@ -13,6 +13,7 @@ CREATE TABLE orders
   startup_fee char(128),
   merchant_order_id char(128),
   return_url char(255),
+  status char(1) DEFAULT 'A',
   PRIMARY KEY (id)
 ) ENGINE MyISAM;
 

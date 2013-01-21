@@ -9,5 +9,7 @@ secret_word=""
 return_url=""
 callback_url=""
 account_number=""
+api_user=""
+api_pass=""
 
 ; */ ?>

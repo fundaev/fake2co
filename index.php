@@ -1,3 +1,7 @@
+<?php
+include 'order.php';
+logRequest();
+?>
 <html>
 <head>
 	<script type="text/javascript">

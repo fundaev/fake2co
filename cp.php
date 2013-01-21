@@ -155,6 +155,7 @@ function showOrdersTable($orders)
 	echo "    <th>Merchant order ID</th>\n";
 	echo "    <th>Date</th>\n";
 	echo "    <th>Fraud status</th>\n";
+	echo "    <th>Status</th>\n";
 	echo "    <th>e-mail</th>\n";
 	echo "    <th>Card holder name</th>\n";
 	echo "    <th>Product</th>\n";
@@ -172,6 +173,9 @@ function showOrdersTable($orders)
 		echo "    <td align=\"center\">".date('d.m.Y H:i:s', $order['create_date'])."</td>\n";
 		$bgclr = $order['fraud_status'] == 'pass' ? '#88ff88' : ($order['fraud_status'] == 'fail' ? '#ff8888' : '#ffffff');
 		echo "    <td align=\"center\" bgcolor=\"$bgclr\">$order[fraud_status]</td>\n";
+		$bgclr = $order['status'] == ORDER_STATUS_ACTIVE ? '#88ff88' : ($order['status'] == ORDER_STATUS_CANCELED ? '#ff8888' : '#ffffff');
+		$status = $order['status'] == ORDER_STATUS_ACTIVE ? 'Active' : ($order['status'] == ORDER_STATUS_CANCELED ? 'Canceled' : '???');
+		echo "    <td align=\"center\" bgcolor=\"$bgclr\">$status</td>\n";
 		echo "    <td align=\"center\">$order[email]</td>\n";
 		echo "    <td align=\"center\">$order[cardholder_name]</td>\n";
 		echo "    <td align=\"center\">$order[product]</td>\n";

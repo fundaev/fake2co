@@ -5,6 +5,30 @@ require_once 'http.php';
 
 define('TRANSACTION_STATUS_SUCCESS', 'approved');
 define('TRANSACTION_STATUS_FAILED', 'declined');
+define('ORDER_STATUS_ACTIVE', 'A');
+define('ORDER_STATUS_CANCELED', 'C');
+
+function logRequest()
+{
+	if (!file_exists('./logs')) {
+		mkdir('./logs', 0777);
+	}
+
+	$logFileName = './logs/request-' . date('Ymd');
+	$log = '[' . date('H:i:s') . '] ' . $_SERVER['REQUEST_METHOD'] . "\n";
+	$log .= "GET:\n";
+	$log .= var_export($_GET, true) . "\n-------------------------------\n";
+
+	if ('POST' == $_SERVER['REQUEST_METHOD']) {
+		$log .= "POST:\n";
+		$log .= var_export($_POST, true) . "\n-------------------------------\n";
+	}
+
+	$log .= "SERVER:\n";
+	$log .= var_export($_SERVER, true) . "\n===============================\n\n";
+
+	file_put_contents($logFileName, $log);
+}
 
 function processOrder($params)
 {
@@ -27,6 +51,7 @@ function processOrder($params)
         'merchant_order_id' => $params['merchant_order_id'],
         'return_url'        => $params['return_url'],
         'fraud_status'      => (isset($params['fraud_status']) ? $params['fraud_status'] : 'wait'),
+        'status'            => ORDER_STATUS_ACTIVE,
 	);
 	$order_id = db_insert('orders', $fields);
 
@@ -67,6 +92,10 @@ function makeTransaction($orderId, $status, $initialInvoice = false)
 function getOrderInfo($orderId)
 {
 	$res = db_query("SELECT * FROM orders WHERE id=".addslashes($orderId));
+
+    if ($res === false) {
+    	return false;
+    }
 
 	$order = mysql_fetch_assoc($res);
 	mysql_free_result($res);
