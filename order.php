@@ -8,9 +8,9 @@ define('TRANSACTION_STATUS_FAILED', 'declined');
 
 function processOrder($params)
 {
-	$price = intval($params['li_0_price']);
+	$total = floatval($params['li_0_price']);
 	if (isset($params['li_0_startup_fee'])) {
-	    $price += intval($params['li_0_startup_fee']);
+	    $total += floatval($params['li_0_startup_fee']);
 	}
 
 	// Insert order into DB
@@ -22,7 +22,8 @@ function processOrder($params)
 		'recurrence'        => $params['li_0_recurrence'],
 		'product'           => $params['li_0_name'],
 		'product_desc'      => $params['li_0_product_description'],
-		'price'             => $price,
+		'price'             => $params['li_0_price'],
+		'startup_fee'       => isset($params['li_0_startup_fee']) ? $params['li_0_startup_fee'] : '0',
         'merchant_order_id' => $params['merchant_order_id'],
         'return_url'        => $params['return_url'],
         'fraud_status'      => (isset($params['fraud_status']) ? $params['fraud_status'] : 'wait'),
@@ -30,15 +31,15 @@ function processOrder($params)
 	$order_id = db_insert('orders', $fields);
 
 	if (isset($params['send_callback'])) {
-		$transaction_id = makeTransaction($order_id, $params['invoice_status']);
+		$transaction_id = makeTransaction($order_id, $params['invoice_status'], true);
 	 	// Callback
 	    $data = array(
 			'auth_exp'            => '2015-12-31',
 			'invoice_status'      => $params['invoice_status'],
 			'fraud_status'        => $params['fraud_status'],
-			'invoice_list_amount' => $price,
-			'invoice_usd_amount'  => $price,
-			'invoice_cust_amount' => $price,
+			'invoice_list_amount' => $total,
+			'invoice_usd_amount'  => $total,
+			'invoice_cust_amount' => $total,
     	);
     	sendCallback($order_id, $transaction_id, 'ORDER_CREATED', $data);
     } else {
@@ -48,11 +49,12 @@ function processOrder($params)
 	returnBack($params, true, $order_id, $transaction_id);
 }
 
-function makeTransaction($orderId, $status)
+function makeTransaction($orderId, $status, $initialInvoice = false)
 {
 	$order = getOrderInfo($orderId);
 	$fields = array(
 		'order_id'    => $orderId,
+		'price'       => $initialInvoice ? $order['total'] : $order['price'],
 		'type'        => 'G', // general
 		'create_date' => time(),
 		'status'      => $status, //active
@@ -68,6 +70,9 @@ function getOrderInfo($orderId)
 
 	$order = mysql_fetch_assoc($res);
 	mysql_free_result($res);
+
+    $order['startup_fee'] = floatval($order['startup_fee']);
+    $order['total'] = floatval($order['price']) + floatval($order['startup_fee']);
 
     $transactions = array();
     $res = db_query("SELECT * FROM order_transactions WHERE order_id=".stripcslashes($orderId));
@@ -103,6 +108,8 @@ function getOrdersList()
 
 	$orders = array();
 	while (($row = mysql_fetch_assoc($res)) !== false) {
+		$row['startup_fee'] = floatval($row['startup_fee']);
+        $row['total'] = floatval($row['price']) + floatval($row['startup_fee']);
 		$orders[] = $row;
 	}
 	mysql_free_result($res);
@@ -114,9 +121,9 @@ function returnBack($params, $success, $orderId, $transactionId)
 {
 	$config = parse_ini_file('config.ini.php');
 
-	$price = intval($params['li_0_price']);
+	$total = floatval($params['li_0_price']);
 	if (isset($params['li_0_startup_fee'])) {
-	    $price += intval($params['li_0_startup_fee']);
+	    $total += floatval($params['li_0_startup_fee']);
 	}
 
 	$key = strtoupper(
@@ -124,7 +131,7 @@ function returnBack($params, $success, $orderId, $transactionId)
 			$config['secret_word'] 
 			. $params['sid']
 			. (isset($params['demo']) ? '1' : $orderId)
-			. $price
+			. $total
 		)
 	);
 
@@ -156,7 +163,7 @@ function returnBack($params, $success, $orderId, $transactionId)
 		'state'                 => 'New York',
 		'street_address'        => 'Address',
 		'street_address2'       => 'Address 2',
-		'total'                 => $price,
+		'total'                 => $total,
 		'zip'                   => '10001',
 	);
 
@@ -284,15 +291,15 @@ function processCallback($params)
 
 function callback_orderCreated($orderId, $invoiceStatus, $fraudStatus)
 {
-	$transaction_id = makeTransaction($orderId, $invoiceStatus);
+	$transaction_id = makeTransaction($orderId, $invoiceStatus, true);
 	$order = getOrderInfo($orderId);
     $data = array(
 		'auth_exp'            => '2015-12-31',
 		'invoice_status'      => $invoiceStatus,
 		'fraud_status'        => $fraudStatus,
-		'invoice_list_amount' => $order['price'],
-		'invoice_usd_amount'  => $order['price'],
-		'invoice_cust_amount' => $order['price'],
+		'invoice_list_amount' => $order['total'],
+		'invoice_usd_amount'  => $order['total'],
+		'invoice_cust_amount' => $order['total'],
    	);
    	sendCallback($orderId, $transaction_id, 'ORDER_CREATED', $data);
 }

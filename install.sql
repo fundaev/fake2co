@@ -10,6 +10,7 @@ CREATE TABLE orders
   product char(128),
   product_desc char(128),
   price char(128),
+  startup_fee char(128),
   merchant_order_id char(128),
   return_url char(255),
   PRIMARY KEY (id)
@@ -19,6 +20,7 @@ CREATE TABLE order_transactions
 (
   id int NOT NULL AUTO_INCREMENT,
   order_id int NOT NULL,
+  price char(16),
   type char(64) NOT NULL,
   create_date int NOT NULL,
   status char(64),

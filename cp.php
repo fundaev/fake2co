@@ -158,9 +158,11 @@ function showOrdersTable($orders)
 	echo "    <th>e-mail</th>\n";
 	echo "    <th>Card holder name</th>\n";
 	echo "    <th>Product</th>\n";
-	echo "    <th>Price</th>\n";
 	echo "    <th>Duration</th>\n";
 	echo "    <th>Recurrence</th>\n";
+	echo "    <th>Price</th>\n";
+	echo "    <th>Start up fee</th>\n";
+	echo "    <th>Total</th>\n";
 	echo "  <tr>\n";
 
 	foreach ($orders as $order) {
@@ -173,9 +175,11 @@ function showOrdersTable($orders)
 		echo "    <td align=\"center\">$order[email]</td>\n";
 		echo "    <td align=\"center\">$order[cardholder_name]</td>\n";
 		echo "    <td align=\"center\">$order[product]</td>\n";
-		echo "    <td align=\"center\">$order[price]</td>\n";
 		echo "    <td align=\"center\">$order[duration]</td>\n";
 		echo "    <td align=\"center\">$order[recurrence]</td>\n";
+		echo "    <td align=\"center\">$order[price]</td>\n";
+		echo "    <td align=\"center\">$order[startup_fee]</td>\n";
+		echo "    <td align=\"center\">$order[total]</td>\n";
 		echo "  </tr>\n";
 	}
 
@@ -190,6 +194,7 @@ function showTransactionsTable($transactions)
 	echo "    <th>Date</th>\n";
 	echo "    <th>Type</th>\n";
 	echo "    <th>Invoice status</th>\n";
+	echo "    <th>Total</th>\n";
 	echo "  <tr>\n";
 
 	foreach ($transactions as $tr) {
@@ -199,6 +204,7 @@ function showTransactionsTable($transactions)
 		echo "    <td align=\"center\">$tr[type]</td>\n";
 		$bgclr = $tr['status'] == TRANSACTION_STATUS_SUCCESS ? '#88ff88' : ($tr['status'] == TRANSACTION_STATUS_FAILED ? '#ff8888' : '#ffffff');
 		echo "    <td align=\"center\" bgcolor=\"$bgclr\">$tr[status]</td>\n";
+		echo "    <td align=\"center\">$tr[price]</td>\n";
 		echo "  </tr>\n";
 	}
 
