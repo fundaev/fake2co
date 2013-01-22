@@ -19,8 +19,8 @@ if (!isset($_POST['lineitem_id']) || empty($_POST['lineitem_id'])) {
 
 } else {
 	$res     = stopLineitemRecurring($_POST['lineitem_id']);
-	$code    = $sale !== false ? 'OK' : 'RECORD_NOT_FOUND';
-	$message = $sale !== false ? 'Recurring billing stopped for lineitem' : 'Oops';
+	$code    = $res !== false ? 'OK' : 'RECORD_NOT_FOUND';
+	$message = $res !== false ? 'Recurring billing stopped for lineitem' : 'Oops';
 }
 
 $data = array(

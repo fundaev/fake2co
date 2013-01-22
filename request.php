@@ -9,10 +9,10 @@ function sendResponse($data)
 
 function getDetailSale($saleId, $invoiceId)
 {
-	$order = getOrderInfo($saleId);
+	//$order = getOrderInfo($saleId);
     $sale = false;
 
-	if ($order !== false) {
+	//if ($order !== false) {
 		$sale = array(
 			'invoices' => array(
 				'lineitems' => array(
@@ -20,14 +20,14 @@ function getDetailSale($saleId, $invoiceId)
 				),
 			),
 		);
-	}
+	//}
 
 	return $sale;
 }
 
 function stopLineitemRecurring($orderId)
 {
-	$order = getOrderInfo($saleId);
+	$order = getOrderInfo($orderId);
 	$res = false;
 
 	if ($order !== false) {
